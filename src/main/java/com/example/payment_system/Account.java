@@ -1,10 +1,20 @@
 package com.example.payment_system;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
 public class Account {
     
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     private String name;
     private String type;
+    private Long  balance;
     
     public Account() {}
     
@@ -13,12 +23,13 @@ public class Account {
         this.id = id;
         this.name = name;
         this.type = type;
+        this.balance = 0L;
     }
     
     public Long getId() {
         return id;
     }
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
     public String getName() {
@@ -32,5 +43,11 @@ public class Account {
     }
     public void setType(String type) {
         this.type = type;
+    }
+    public Long getBalance() {
+        return balance;
+    }
+    public void setBalance(Long balance) {
+        this.balance = balance;
     }
 }
