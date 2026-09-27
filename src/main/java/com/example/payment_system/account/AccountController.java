@@ -1,8 +1,7 @@
-package com.example.payment_system;
+package com.example.payment_system.account;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController

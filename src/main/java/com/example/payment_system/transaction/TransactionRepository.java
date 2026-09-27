@@ -1,4 +1,4 @@
-package com.example.payment_system;
+package com.example.payment_system.transaction;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,5 +1,7 @@
-package com.example.payment_system;
+package com.example.payment_system.transaction;
 
+import com.example.payment_system.account.Account;
+import com.example.payment_system.account.AccountRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +24,14 @@ public class TransactionService {
             throw new IllegalArgumentException("Amount must be greater than zero");
         }
         
-        // Sender and Receiver cannot be the same
+        // Sender and Receiver validation
+        if (senderId == null || receiverId == null) {
+            throw new IllegalArgumentException("Sender and receiver IDs are required");
+        }
         if(senderId.equals(receiverId)) {
             throw new IllegalArgumentException("Sender id cannot be equal to receiver id");
         }
+        
         // Find Sender and Receiver
         Account sender = accountRepository.findById(senderId)
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found."));
@@ -39,7 +45,7 @@ public class TransactionService {
         sender.setBalance(sender.getBalance() - amount);
         receiver.setBalance(receiver.getBalance() + amount);
         
-        // Save new balance
+        // Save new balance // These are redundant. JPA automatically saves the changes
         accountRepository.save(sender);
         accountRepository.save(receiver);
         

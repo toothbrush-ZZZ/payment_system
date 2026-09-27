@@ -1,4 +1,4 @@
-package com.example.payment_system;
+package com.example.payment_system.account;
 
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,7 @@ public class AccountService {
             throw new IllegalArgumentException("Account name is required");
         }
         
-        if (account.getType() == null || account.getType().isBlank()) {
+        if (account.getType() == null) {
             throw new IllegalArgumentException("Account type is required");
         }
         

@@ -1,9 +1,6 @@
-package com.example.payment_system;
+package com.example.payment_system.account;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Account {
@@ -13,14 +10,15 @@ public class Account {
     private Long id;
     
     private String name;
-    private String type;
+    
+    @Enumerated(EnumType.STRING)
+    private AccountType type;
+    
     private Long  balance;
     
     public Account() {}
     
-    public Account(Long id, String name, String type) {
-        
-        this.id = id;
+    public Account(String name, AccountType type) {
         this.name = name;
         this.type = type;
         this.balance = 0L;
@@ -35,10 +33,10 @@ public class Account {
     public void setName(String name) {
         this.name = name;
     }
-    public String getType() {
+    public AccountType getType() {
         return type;
     }
-    public void setType(String type) {
+    public void setType(AccountType type) {
         this.type = type;
     }
     public Long getBalance() {

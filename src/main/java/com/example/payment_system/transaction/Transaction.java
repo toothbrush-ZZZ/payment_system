@@ -1,5 +1,6 @@
-package com.example.payment_system;
+package com.example.payment_system.transaction;
 
+import com.example.payment_system.account.Account;
 import jakarta.persistence.*;
 
 @Entity
