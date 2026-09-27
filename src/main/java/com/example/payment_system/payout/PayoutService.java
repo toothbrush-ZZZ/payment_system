@@ -4,6 +4,8 @@ import com.example.payment_system.account.Account;
 import com.example.payment_system.account.AccountRepository;
 import com.example.payment_system.settlement.Settlement;
 import com.example.payment_system.settlement.SettlementRepository;
+import com.example.payment_system.transaction.TransactionService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,19 +16,23 @@ public class PayoutService {
     private final PayoutRepository payoutRepository;
     private final SettlementRepository settlementRepository;
     private final AccountRepository accountRepository;
+    private final TransactionService transactionService;
     
     public PayoutService(PayoutRepository payoutRepository,
                          SettlementRepository settlementRepository,
-                         AccountRepository accountRepository) {
+                         AccountRepository accountRepository,
+                         TransactionService transactionService) {
         this.payoutRepository = payoutRepository;
         this.settlementRepository = settlementRepository;
         this.accountRepository = accountRepository;
+        this.transactionService = transactionService;
     }
     
     public List<Payout> getPayouts(){
         return payoutRepository.findAll();
     }
     
+    @Transactional
     public Payout createPayout(Long settlementId, Long accountId, Long amount){
         
         Settlement settlement = settlementRepository.findById(settlementId)
@@ -40,6 +46,10 @@ public class PayoutService {
         payout.setAccount(account);
         payout.setAmount(amount);
         
-        return payoutRepository.save(payout);
+        Payout savedPayout = payoutRepository.save(payout);
+        
+        transactionService.payout(accountId, amount);
+        
+        return savedPayout;
     }
 }

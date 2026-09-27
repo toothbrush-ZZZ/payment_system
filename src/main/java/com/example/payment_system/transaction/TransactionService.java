@@ -2,6 +2,7 @@ package com.example.payment_system.transaction;
 
 import com.example.payment_system.account.Account;
 import com.example.payment_system.account.AccountRepository;
+import com.example.payment_system.account.AccountType;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -52,5 +53,13 @@ public class TransactionService {
         Transaction transaction = new Transaction(amount, sender, receiver);
         
         return transactionRepository.save(transaction);
+    }
+    
+    public Transaction payout(Long receiverId, Long amount) {
+        
+        Account platformAccount = accountRepository.findByType(AccountType.PLATFORM)
+                .orElseThrow(() -> new IllegalArgumentException("Platform account not found."));
+        
+        return transfer(platformAccount.getId(), receiverId, amount);
     }
 }
