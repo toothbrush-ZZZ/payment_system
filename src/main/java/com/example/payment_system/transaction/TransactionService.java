@@ -7,6 +7,8 @@ import com.example.payment_system.ledger.LedgerService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TransactionService {
     
@@ -19,6 +21,10 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.ledgerService = ledgerService;
+    }
+    
+    public List<Transaction> getTransactions() {
+        return transactionRepository.findAll();
     }
     
     @Transactional
