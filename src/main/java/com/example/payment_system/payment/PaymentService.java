@@ -1,5 +1,7 @@
 package com.example.payment_system.payment;
 
+import com.example.payment_system.transaction.TransactionService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,10 +11,14 @@ public class PaymentService {
     
     private final PaymentRepository paymentRepository;
     private final PaymentProvider paymentProvider;
+    private final TransactionService transactionService;
     
-    public PaymentService(PaymentRepository paymentRepository, PaymentProvider paymentProvider) {
+    public PaymentService(PaymentRepository paymentRepository,
+                          PaymentProvider paymentProvider,
+                          TransactionService transactionService) {
         this.paymentRepository = paymentRepository;
         this.paymentProvider = paymentProvider;
+        this.transactionService = transactionService;
     }
     
     public List<Payment> getPayments() {
@@ -26,6 +32,7 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
     
+    @Transactional
     public Payment processPayment(Long paymentId) {
         
         Payment payment = paymentRepository.findById(paymentId)
@@ -34,11 +41,21 @@ public class PaymentService {
         payment.setStatus(PaymentStatus.PROCESSING);
         
         boolean successful = paymentProvider.processPayment(payment);
+        
         if (successful) {
+            
+            transactionService.receivePayment(
+                    payment.getCustomer().getId(),
+                    payment.getAmount()
+            );
+            
             payment.setStatus(PaymentStatus.COMPLETED);
-        } else payment.setStatus(PaymentStatus.FAILED);
+            
+        } else {
+            
+            payment.setStatus(PaymentStatus.FAILED);
+        }
         
         return paymentRepository.save(payment);
-    
     }
 }

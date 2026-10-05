@@ -62,4 +62,17 @@ public class TransactionService {
         
         return transfer(platformAccount.getId(), receiverId, amount);
     }
+    
+    public Transaction receivePayment(Long customerId, Long amount) {
+        
+        Account platformAccount = accountRepository.findByType(AccountType.PLATFORM)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Platform account not found."));
+        
+        return transfer(
+                customerId,
+                platformAccount.getId(),
+                amount
+        );
+    }
 }
