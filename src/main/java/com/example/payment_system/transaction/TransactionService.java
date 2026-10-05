@@ -3,6 +3,7 @@ package com.example.payment_system.transaction;
 import com.example.payment_system.account.Account;
 import com.example.payment_system.account.AccountRepository;
 import com.example.payment_system.account.AccountType;
+import com.example.payment_system.ledger.LedgerService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +12,13 @@ public class TransactionService {
     
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
+    private final LedgerService ledgerService;
     
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository,
+                              LedgerService ledgerService) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
+        this.ledgerService = ledgerService;
     }
     
     @Transactional
@@ -52,7 +56,11 @@ public class TransactionService {
         
         Transaction transaction = new Transaction(amount, sender, receiver);
         
-        return transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        
+        ledgerService.createEntries(savedTransaction, sender, receiver, amount);
+        
+        return savedTransaction;
     }
     
     public Transaction payout(Long receiverId, Long amount) {
