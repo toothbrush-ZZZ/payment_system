@@ -27,6 +27,9 @@ public class PaymentService {
     
     public Payment createPayment(Payment payment) {
         
+        if (payment.getAmount() == null || payment.getAmount() <= 0) {
+            throw new IllegalArgumentException("Payment amount must be greater than zero");
+        }
         payment.setStatus(PaymentStatus.PENDING);
         
         return paymentRepository.save(payment);
@@ -38,12 +41,17 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment with id: " + paymentId + " not found"));
         
+        // Prevent duplicate processing
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            throw new IllegalArgumentException(
+                    "Payment has already been processed");
+        }
+        
         payment.setStatus(PaymentStatus.PROCESSING);
         
         boolean successful = paymentProvider.processPayment(payment);
         
         if (successful) {
-            
             transactionService.receivePayment(
                     payment.getCustomer().getId(),
                     payment.getAmount()
