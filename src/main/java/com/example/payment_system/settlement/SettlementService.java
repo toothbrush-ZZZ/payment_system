@@ -31,6 +31,12 @@ public class SettlementService {
             throw new IllegalStateException("Payment is not COMPLETED");
         }
         
+        // Prevent dubplicate payment for one settlement
+        if (settlementRepository.findByPaymentId(paymentId).isPresent()) {
+            throw new IllegalArgumentException(
+                    "Payment has already been settled");
+        }
+        
         Long amount = payment.getAmount();
         
         Settlement settlement = new Settlement();
