@@ -59,9 +59,14 @@ public class PayoutService {
                     "Payouts can only be made to restaurant, delivery, or platform accounts");
         }
         
-        if (amount > allowedAmount) {
+        Long alreadyPaid = payoutRepository.getTotalPaid(
+                settlementId,
+                accountId
+        );
+        
+        if (alreadyPaid + amount > allowedAmount) {
             throw new IllegalArgumentException(
-                    "Payout amount exceeds settlement allocation");
+                    "Payout amount exceeds remaining settlement allocation");
         }
         
         Payout payout = new Payout();
