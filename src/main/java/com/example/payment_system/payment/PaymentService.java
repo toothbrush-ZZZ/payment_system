@@ -2,6 +2,7 @@ package com.example.payment_system.payment;
 
 import com.example.payment_system.transaction.TransactionService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,9 @@ public class PaymentService {
     private final PaymentProvider paymentProvider;
     private final TransactionService transactionService;
     private final PaymentWebhookEventRepository webhookEventRepository;
+    
+    @Value("${payment.webhook.secret}")
+    private String webhookSecret;
     
     public PaymentService(PaymentRepository paymentRepository,
                           PaymentProvider paymentProvider,
@@ -65,7 +69,8 @@ public class PaymentService {
     public Payment handlePaymentWebhook(
             Long paymentId,
             boolean success,
-            String eventId) {
+            String eventId,
+            String signature) {
         
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() ->
@@ -82,6 +87,18 @@ public class PaymentService {
         if (payment.getStatus() != PaymentStatus.PROCESSING) {
             throw new IllegalArgumentException(
                     "Payment is not waiting for a webhook");
+        }
+        
+        String expectedSignature =
+                WebhookSignature.generate(
+                        eventId,
+                        success,
+                        webhookSecret
+                );
+        
+        if (!expectedSignature.equals(signature)) {
+            throw new IllegalArgumentException(
+                    "Invalid webhook signature");
         }
         
         PaymentWebhookEvent event = new PaymentWebhookEvent();

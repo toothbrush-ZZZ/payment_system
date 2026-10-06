@@ -15,8 +15,9 @@ public class PaymentWebhookController {
     @PostMapping("/payment/{paymentId}")
     public Payment handlePaymentWebhook(@PathVariable("paymentId") Long paymentId,
                                         @RequestParam boolean success,
-                                        @RequestParam String eventId){
+                                        @RequestParam String eventId,
+                                        @RequestParam String signature){
         
-        return paymentService.handlePaymentWebhook(paymentId, success, eventId);
+        return paymentService.handlePaymentWebhook(paymentId, success, eventId, signature);
     }
 }
