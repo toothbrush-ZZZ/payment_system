@@ -51,7 +51,32 @@ public class PaymentService {
         
         boolean successful = paymentProvider.processPayment(payment);
         
-        if (successful) {
+        if (!successful) {
+            payment.setStatus(PaymentStatus.FAILED);
+        }
+        
+        return paymentRepository.save(payment);
+    }
+    
+    @Transactional
+    public Payment handlePaymentWebhook(
+            Long paymentId,
+            boolean success) {
+        
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Payment with id: "
+                                        + paymentId
+                                        + " not found"));
+        
+        if (payment.getStatus() != PaymentStatus.PROCESSING) {
+            throw new IllegalArgumentException(
+                    "Payment is not waiting for a webhook");
+        }
+        
+        if (success) {
+            
             transactionService.receivePayment(
                     payment.getCustomer().getId(),
                     payment.getAmount()
