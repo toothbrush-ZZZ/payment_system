@@ -12,13 +12,16 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentProvider paymentProvider;
     private final TransactionService transactionService;
+    private final PaymentWebhookEventRepository webhookEventRepository;
     
     public PaymentService(PaymentRepository paymentRepository,
                           PaymentProvider paymentProvider,
-                          TransactionService transactionService) {
+                          TransactionService transactionService,
+                          PaymentWebhookEventRepository webhookEventRepository) {
         this.paymentRepository = paymentRepository;
         this.paymentProvider = paymentProvider;
         this.transactionService = transactionService;
+        this.webhookEventRepository = webhookEventRepository;
     }
     
     public List<Payment> getPayments() {
@@ -61,7 +64,8 @@ public class PaymentService {
     @Transactional
     public Payment handlePaymentWebhook(
             Long paymentId,
-            boolean success) {
+            boolean success,
+            String eventId) {
         
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() ->
@@ -70,10 +74,22 @@ public class PaymentService {
                                         + paymentId
                                         + " not found"));
         
+        if (webhookEventRepository.findByEventId(eventId).isPresent()) {
+            throw new IllegalArgumentException(
+                    "Webhook event has already been processed");
+        }
+        
         if (payment.getStatus() != PaymentStatus.PROCESSING) {
             throw new IllegalArgumentException(
                     "Payment is not waiting for a webhook");
         }
+        
+        PaymentWebhookEvent event = new PaymentWebhookEvent();
+        event.setEventId(eventId);
+        event.setPayment(payment);
+        event.setSuccess(success);
+        
+        webhookEventRepository.save(event);
         
         if (success) {
             
